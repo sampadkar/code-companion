@@ -1,0 +1,59 @@
+/* NSOffice glass UI tokens — rebuilt from the brief:
+   Electric Blue as the single accent, DM Sans, Apple-style spacing. */
+
+:root {
+  /* Accent — the ONE accent color, Electric Blue */
+  --accent: #2d6bff;
+  --accent-hover: #1e54e0;
+  --accent-soft: rgba(45, 107, 255, 0.12);
+
+  /* Ink / surfaces */
+  --ink: #0b0d12;
+  --ink-2: #3c414c;
+  --ink-3: #6b7280;
+  --surface: #f6f7f9;
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --hairline: rgba(11, 13, 18, 0.08);
+
+  /* Semantic (kept monochrome-adjacent so Electric Blue stays alone visually) */
+  --live: #2d6bff;
+
+  /* Type — DM Sans */
+  --font: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Spacing scale — Apple-style 4/8pt */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Shape & shadow */
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --shadow-card: 0 8px 32px rgba(11, 13, 18, 0.10);
+  --shadow-float: 0 16px 48px rgba(11, 13, 18, 0.14);
+  --blur: 24px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration: 360ms;
+}
+
+body[data-theme="dark"] {
+  --ink: #f2f4f8;
+  --ink-2: #c4c9d4;
+  --ink-3: #8a919e;
+  --surface: #08090d;
+  --glass-bg: rgba(24, 27, 34, 0.55);
+  --glass-bg-strong: rgba(24, 27, 34, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --hairline: rgba(255, 255, 255, 0.10);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.55);
+}

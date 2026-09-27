@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Review Companion · NSOffice</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231b4dff'/%3E%3Cpath d='M9 16s2.6-5 7-5 7 5 7 5-2.6 5-7 5-7-5-7-5z' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23fff'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><span class="bg-accent"></span><span class="bg-white"></span></div>
+
+  <div id="app">
+    <header class="glass bar">
+      <div class="brand">
+        <span class="brand-name">NSOffice</span>
+        <span class="brand-sub">Code Review Companion</span>
+      </div>
+      <div class="live-pill" id="live-badge" hidden>
+        <span class="live-dot"></span><span id="live-label">Live</span><span class="live-mode" id="live-mode"></span><span class="timer" id="timer">00:00</span>
+      </div>
+      <button type="button" class="btn-quiet" id="end-btn" hidden>End session</button>
+    </header>
+
+    <!-- 0 · Start -->
+    <main class="view-start" id="view-start">
+      <section class="glass hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="eyebrow">Live code review</div>
+          <h1 id="hero-title">Talk through the bug. Pair watches the code with you.</h1>
+          <p class="lede">
+            Share your screen and think out loud. Pair follows what you're looking at and what
+            you're saying, and speaks up when it spots something, like a senior engineer looking
+            over your shoulder.
+          </p>
+        </div>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
+            </div>
+            <div class="step-copy">
+              <div class="step-title">Share the screen with your code</div>
+              <div class="step-sub">Keep DevTools in view too if the bug shows up there.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+            </div>
+            <div class="step-copy">
+              <div class="step-title">Allow the microphone</div>
+              <div class="step-sub">Talk normally. Cut in whenever you like and Pair stops to listen.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modes">
+          <div class="modes-label" id="modes-label">Review focus</div>
+          <div class="mode-options" id="mode-options" role="radiogroup" aria-labelledby="modes-label"></div>
+          <div class="mode-desc" id="mode-desc"></div>
+        </div>
+
+        <div class="hero-actions">
+          <button type="button" class="btn-primary" id="start-btn">Share screen and start</button>
+          <div class="hint" id="start-hint">Voice and screen run live on gemini-3.1-flash-live-preview</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 1–3 · Live session -->
+    <main class="live" id="view-live" hidden>
+      <div class="live-left">
+        <section class="glass screen" aria-label="Your shared screen">
+          <div class="screen-head">
+            <div class="screen-title">
+              <span class="title">Your screen</span>
+              <span class="sub" id="screen-sub">Shared live</span>
+            </div>
+            <div class="watching" id="watching">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span id="watching-text">Pair is watching</span>
+            </div>
+          </div>
+
+          <div class="screen-frame">
+            <video id="screen-video" autoplay muted playsinline></video>
+            <div class="screen-badge" id="screen-badge" hidden></div>
+          </div>
+
+          <div class="following" id="following" aria-label="What Pair is following">
+            <span class="following-label">Following</span>
+          </div>
+        </section>
+
+        <div class="dock">
+          <form class="glass type-bar" id="type-row" hidden>
+            <input id="type-input" type="text" aria-label="Message to Pair" placeholder="Type to Pair, or paste code to share it…" autocomplete="off" />
+            <button type="submit" class="icon-btn" aria-label="Send message">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </button>
+          </form>
+
+          <div class="glass pill">
+            <button type="button" class="icon-btn" id="stopshare-btn" aria-label="Stop sharing screen and end session">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
+            </button>
+            <button type="button" class="mic-btn" id="mic-btn" aria-label="Mute microphone">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+              <span class="waveform" id="mic-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+              <span id="mic-label">Mic live</span>
+            </button>
+            <button type="button" class="icon-btn" id="type-toggle-btn" aria-label="Type instead of talking" aria-pressed="false">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"></path></svg>
+            </button>
+            <button type="button" class="icon-btn" id="attach-btn" aria-label="Share a file with Pair">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5.3 5.3 0 0 1-7.5-7.5l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.6 8.6a1.8 1.8 0 0 1-2.5-2.5l7.9-7.9"></path></svg>
+            </button>
+            <input type="file" id="file-input" multiple hidden />
+            <button type="button" class="icon-btn" id="pause-btn" aria-label="Pause Pair" aria-pressed="false">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="live-right">
+        <section class="glass pin" id="pinned-card" hidden aria-label="Pinned by Pair">
+          <div class="pin-head">
+            <span class="pin-title">
+              <span class="pin-label" id="pinned-label">Pinned by Pair</span>
+              <span class="sev" id="pinned-sev" hidden></span>
+            </span>
+            <span class="pin-loc" id="pinned-loc"></span>
+          </div>
+          <p class="pin-text" id="pinned-text"></p>
+          <div class="pin-detail" id="pinned-detail" hidden>
+            <div class="pin-detail-label" id="pinned-detail-label"></div>
+            <div class="pin-detail-body" id="pinned-detail-body"></div>
+          </div>
+          <div class="diff" id="pinned-diff" hidden></div>
+          <div class="pin-actions" id="pin-actions" hidden>
+            <button type="button" class="btn-follow" id="pinned-copy" hidden>Copy fix</button>
+            <button type="button" class="btn-follow" id="pinned-cta" hidden></button>
+          </div>
+        </section>
+
+        <aside class="glass convo" aria-label="Conversation">
+          <div class="convo-head">
+            <span class="convo-title">Conversation</span>
+            <span class="speaking" id="speaking" data-state="quiet" aria-live="polite">
+              <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+              <span id="speaking-text">Quiet</span>
+            </span>
+          </div>
+          <div class="transcript" id="transcript" aria-live="polite"></div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- 4 · Review report -->
+    <main class="view-summary" id="view-summary" hidden>
+      <section class="glass report" id="report" aria-labelledby="report-title">
+        <div class="report-head">
+          <div class="eyebrow">Review summary</div>
+          <h1 class="report-title" id="report-title" aria-live="polite">Writing your review summary…</h1>
+          <div class="report-meta" id="report-meta"></div>
+          <p class="report-note" id="report-note" hidden>Couldn't write the full summary right now, so these are the notes Pair pinned during the session.</p>
+        </div>
+
+        <div class="report-stats" id="report-stats"></div>
+
+        <section class="report-section" aria-labelledby="findings-title">
+          <h2 id="findings-title">Findings</h2>
+          <div class="findings" id="report-findings"></div>
+        </section>
+
+        <section class="report-section" id="report-patches-wrap" hidden aria-labelledby="patches-title">
+          <h2 id="patches-title">Suggested changes</h2>
+          <div class="findings" id="report-patches"></div>
+        </section>
+
+        <section class="report-section" id="report-unresolved-wrap" hidden aria-labelledby="unresolved-title">
+          <h2 id="unresolved-title">Still open</h2>
+          <ul class="report-list" id="report-unresolved"></ul>
+        </section>
+
+        <section class="report-section" id="report-next-wrap" hidden aria-labelledby="next-title">
+          <h2 id="next-title">Next steps</h2>
+          <ul class="report-list" id="report-next"></ul>
+        </section>
+
+        <section class="report-section" aria-labelledby="timeline-title">
+          <h2 id="timeline-title">Timeline</h2>
+          <ol class="timeline" id="report-timeline"></ol>
+        </section>
+
+        <div class="report-actions">
+          <button type="button" class="btn-primary" id="copy-report-btn">Copy report</button>
+          <button type="button" class="btn-quiet" id="download-report-btn">Download .md</button>
+          <button type="button" class="btn-quiet" id="new-session-btn">New session</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="error-note" role="alert"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
