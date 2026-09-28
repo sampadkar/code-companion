@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="logo-title logo-description">
+  <title id="logo-title">CodeAssist</title>
+  <desc id="logo-description">Code brackets with an assistant sparkle in a blue tile.</desc>
+  <defs>
+    <linearGradient id="tile" x1="14" y1="12" x2="112" y2="119" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#347BFF"/>
+      <stop offset="1" stop-color="#123ED0"/>
+    </linearGradient>
+    <linearGradient id="code" x1="31" y1="48" x2="90" y2="86" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B8F9FF"/>
+      <stop offset="1" stop-color="#EAFBFF"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="90" y1="22" x2="108" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B9FCFF"/>
+      <stop offset="1" stop-color="#28DBFF"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="0" y="0" width="128" height="128" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#174CCB" flood-opacity=".24"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft-shadow)">
+    <rect x="9" y="9" width="110" height="110" rx="31" fill="url(#tile)"/>
+    <rect x="10" y="10" width="108" height="108" rx="30" stroke="#FFFFFF" stroke-opacity=".2" stroke-width="2"/>
+    <path d="m48 48-16 16 16 16M80 48l16 16-16 16M70 43 58 85" stroke="url(#code)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="m99 23 4 11 11 4-11 4-4 11-4-11-11-4 11-4 4-11Z" fill="url(#spark)"/>
+    <circle cx="31" cy="97" r="3" fill="#35E0FF"/>
+    <path d="M42 97h42" stroke="#FFFFFF" stroke-opacity=".48" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

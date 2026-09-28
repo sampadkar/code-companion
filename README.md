@@ -1,7 +1,7 @@
-# Live Code Review Companion
+# CodeAssist: Live Code Review
 
 A real-time, screen-aware code review session with the **Gemini Live API**. You share
-your editor, talk through a bug out loud, and **Pair** — the companion — follows both
+your editor, talk through a bug out loud, and **CodeAssist** — the companion — follows both
 your screen and the conversation, answering like a senior engineer looking over your
 shoulder, with natural interruption (barge-in) support.
 
@@ -19,30 +19,30 @@ onto a turn-based chatbot.
 
 - **Start** — pick a review focus, then one action: share your screen, allow the mic, go live.
   Focus options: *Bug hunt*, *Security*, *Performance*, *Explain simply* (for newer
-  developers) and *Interviewer* (Pair asks questions and gives hints instead of answers).
-  Each one changes Pair's system prompt.
+  developers) and *Interviewer* (CodeAssist asks questions and gives hints instead of answers).
+  Each one changes CodeAssist's system prompt.
 - **Live** — your shared screen fills the left panel, a timestamped transcript sits on
   the right. A floating glass pill controls the session: stop sharing, mute the mic,
-  type instead of talking, or pause Pair without ending the call.
-- **Following** — the chips under your screen show what Pair is tracking right now
-  ("useSearch.ts · line 14", "Network · 2 requests"). Pair sets them itself with a
+  type instead of talking, or pause CodeAssist without ending the call.
+- **Following** — the chips under your screen show what CodeAssist is tracking right now
+  ("useSearch.ts · line 14", "Network · 2 requests"). CodeAssist sets them itself with a
   `set_following` tool call when its focus shifts.
-- **Pinned by Pair** — when Pair lands on something worth holding onto (a root cause,
+- **Pinned by CodeAssist** — when CodeAssist lands on something worth holding onto (a root cause,
   a risky line, a concrete fix), it calls `pin_note` with a severity (Critical, High,
   Medium or Suggestion). The note appears as a card above the transcript with its
   file:line, an optional code snippet, and sometimes a one-tap follow-up ("Show me the
   change"). The same location is badged on your screen.
-- **Suggested change** — when Pair has a concrete fix it calls `suggest_patch` with the
+- **Suggested change** — when CodeAssist has a concrete fix it calls `suggest_patch` with the
   exact before and after lines. The card shows a line diff with a **Copy fix** button.
   Nothing is written to your files.
 - **Share the real code** — paste code (6+ lines) anywhere, drop a file on the page, or
-  use the paperclip in the pill. Pair gets it as line-numbered text, so it reads the
+  use the paperclip in the pill. CodeAssist gets it as line-numbered text, so it reads the
   exact source instead of a screenshot and cites real line numbers.
 - **Review report** — ending the session sends the transcript, pins and suggested
   changes to `gemini-3-flash-preview`, which writes a headline, severity-ranked
   findings, open questions and next steps. The report also shows every suggested diff
   and a timeline of the session. **Copy report** gives you Markdown for a PR or ticket;
-  **Download .md** saves it. If the summary call fails, the report falls back to Pair's
+  **Download .md** saves it. If the summary call fails, the report falls back to CodeAssist's
   pinned notes.
 
 All three tools are real Live API function calls made mid-conversation. The model
@@ -73,7 +73,7 @@ Browser (mic + screen)                    Vercel (Python)
   the model, its queued audio is cut instantly (barge-in) and the transcript
   shows both sides live.
 - `pin_note`, `suggest_patch` and `set_following` are declared in the Live API session
-  setup; the client answers each call with a `toolResponse` so Pair keeps talking.
+  setup; the client answers each call with a `toolResponse` so CodeAssist keeps talking.
 - **Long sessions:** audio+video Live sessions are cut off after ~2 minutes unless
   context window compression is on, so the setup enables `contextWindowCompression`
   (sliding window). Each connection also lasts only ~10 minutes, so the setup enables
@@ -86,6 +86,13 @@ Browser (mic + screen)                    Vercel (Python)
 - UI follows the NSOffice glass design (`tokens.css` + `liquid-glass.js`, tuned in
   `app.css`): Electric Blue `#1B4DFF` as the single accent, DM Sans, Apple-style
   spacing, one primary action per view. Light theme, as designed.
+
+## Data handling
+
+- During a live review, screen frames and microphone audio are streamed from the browser to the Gemini Live API. Typed messages and code pasted or shared as files are also sent to Gemini for review.
+- When a session ends, the browser sends its transcript, pinned notes, suggested patches, and shared file names to the backend; the backend forwards that context to the Gemini text model to generate the report.
+- CodeAssist does not write reviewed code to local files or store session records in an application database. The selected review mode is saved in browser local storage; active session and report data are held in browser memory.
+- Google's API terms and data-handling policies govern Google's processing and retention of information sent to Gemini. Do not treat the app's lack of a session database as a guarantee about Google's retention.
 
 ## Requirements
 

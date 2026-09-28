@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f6f8fc" />
+  <title>CodeAssist | Live Code Review</title>
+  <meta name="description" content="CodeAssist reviews code with you in real time using screen context, voice, shared files, findings, and suggested patches." />
+  <link rel="icon" type="image/svg+xml" href="codeassist-logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="review.css" />
+</head>
+<body>
+  <div class="app-root">
+    <header class="app-topbar">
+      <a class="app-brand" href="./review.html" aria-label="CodeAssist home">
+        <img class="app-brand-mark" src="codeassist-logo.svg" alt="" />
+        <span><strong>CodeAssist</strong><small>LIVE CODE REVIEW</small></span>
+      </a>
+      <div class="app-topbar-meta"><span class="status-dot"></span> Private session workspace</div>
+      <button class="app-button app-button-quiet" id="end-btn" type="button" hidden>End review</button>
+    </header>
+
+    <main class="app-main">
+      <section class="app-view start-view" id="view-start">
+        <div class="start-copy">
+          <div class="app-eyebrow"><span class="eyebrow-line"></span> A second set of eyes, in real time</div>
+          <h1>Talk through the bug.<br /><span>CodeAssist watches the code.</span></h1>
+          <p class="start-intro">Share your screen, explain what you are seeing, and review the problem together. CodeAssist follows the live context and turns useful moments into findings and suggested changes.</p>
+          <div class="start-proof">
+            <div><span class="proof-icon">01</span><span><strong>Screen + voice</strong><small>Review the code in context</small></span></div>
+            <div><span class="proof-icon">02</span><span><strong>Notes + patches</strong><small>Keep findings close at hand</small></span></div>
+            <div><span class="proof-icon">03</span><span><strong>Session report</strong><small>Export next steps as Markdown</small></span></div>
+          </div>
+        </div>
+
+        <section class="setup-panel" aria-labelledby="setup-title">
+          <div class="setup-panel-head">
+            <div><div class="app-eyebrow">New review</div><h2 id="setup-title">Choose your focus</h2></div>
+            <span class="setup-step">01 <i>/ 02</i></span>
+          </div>
+          <div class="mode-options" id="mode-options" role="radiogroup" aria-label="Review focus"></div>
+          <p class="mode-description" id="mode-desc"></p>
+          <div class="permission-note"><span class="permission-symbol">+</span><span>Your browser will ask to share a screen and allow microphone access. Nothing is captured until you start.</span></div>
+          <details class="privacy-note">
+            <summary>Privacy: screen, microphone, and code you share are sent to Google Gemini for processing.</summary>
+            <div class="privacy-details">
+              <p>Live screen frames and microphone audio stream to Gemini. Pasted or dropped code, typed messages, and review context are also sent. When you end the session, the transcript, pinned notes, and suggested patches are sent to Gemini to create the report.</p>
+              <p>CodeAssist does not store session data in an app database or modify your local files. Your selected review mode is saved in this browser. Google's API terms govern its processing and retention of data sent to Gemini.</p>
+            </div>
+          </details>
+          <p class="browser-support-note" id="browser-support-note" hidden>VS Code's embedded browser may not support screen sharing. Open this page in desktop Chrome or Edge to start a review.</p>
+          <button class="app-button app-button-primary start-button" id="start-btn" type="button">Share screen and start <span aria-hidden="true">&#8594;</span></button>
+          <p class="setup-footnote">A Gemini API key must be configured on the server; the key itself is never sent to your browser.</p>
+        </section>
+
+        <aside class="start-visual" aria-label="Review workflow preview">
+          <div class="visual-topline"><span>CODEASSIST / REVIEW WORKSPACE</span><span class="visual-live"><i></i> READY</span></div>
+          <div class="visual-code"><div class="code-file"><span class="file-glyph">JS</span><span>useSearch.js</span><span class="code-line-label">14:12</span></div>
+            <div class="code-row"><b>10</b><code><span class="code-purple">async function</span> <span class="code-blue">loadResults</span>(query) {</code></div>
+            <div class="code-row"><b>11</b><code>  <span class="code-purple">const</span> response = <span class="code-purple">await</span> fetch(url);</code></div>
+            <div class="code-row code-highlight"><b>12</b><code>  <span class="code-purple">return</span> response.json();</code></div>
+            <div class="code-row"><b>13</b><code>}</code></div>
+          </div>
+          <div class="visual-insight"><img class="insight-mark" src="codeassist-logo.svg" alt="" /><div><small>CODEASSIST IS READY</small><p>Show me the failing state and we can trace it together.</p></div><span class="insight-pulse"></span></div>
+          <div class="visual-footer"><span><i class="mini-green"></i> SCREEN CONTEXT</span><span>VOICE TRANSCRIPT</span><span>PATCH PREVIEW</span></div>
+        </aside>
+      </section>
+
+      <section class="app-view live-view" id="view-live" hidden>
+        <div class="live-heading">
+          <div><div class="app-eyebrow">Live review room</div><h1>Review in progress</h1><p>Talk naturally, or type a message. Share a file for exact line references.</p></div>
+          <div class="live-session-meta"><span class="live-badge" id="live-badge"><i></i><span id="live-label">Live</span></span><span class="session-timer" id="timer">00:00</span></div>
+        </div>
+        <div class="live-grid">
+          <section class="screen-column" aria-label="Shared screen">
+            <div class="surface-heading"><div><span class="surface-kicker">SHARED SCREEN</span><strong id="screen-sub">Waiting for screen</strong></div><span class="screen-live-label"><i></i> LIVE</span></div>
+            <div class="screen-stage">
+              <video id="screen-video" autoplay muted playsinline></video>
+              <div class="screen-placeholder"><img class="placeholder-symbol" src="codeassist-logo.svg" alt="" /><strong>Your shared screen appears here</strong><span>CodeAssist only sees what you choose to share.</span></div>
+              <span class="screen-badge" id="screen-badge" hidden></span>
+              <div class="watching-state" id="watching"><span class="watching-indicator"></span><span id="watching-text">CodeAssist is watching</span></div>
+            </div>
+            <div class="following-row"><span class="following-label">FOLLOWING</span><div id="following"><span class="chip is-focus">Your screen</span></div><button class="app-icon-button" id="stopshare-btn" type="button" aria-label="Stop screen sharing" title="Stop screen sharing">Stop share</button></div>
+            <div class="review-controls">
+              <div class="mic-status"><span class="mic-indicator"></span><span id="mic-label">Mic live</span><div class="mic-waveform" id="mic-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+              <div class="control-actions"><button class="app-icon-button" id="mic-btn" type="button" aria-label="Mute microphone" title="Mute microphone">Mute</button><button class="app-icon-button" id="pause-btn" type="button" aria-label="Pause CodeAssist" aria-pressed="false" title="Pause CodeAssist">Pause CodeAssist</button><button class="app-icon-button" id="type-toggle-btn" type="button" aria-label="Type a message" aria-pressed="false" title="Type a message">Type</button><button class="app-icon-button" id="attach-btn" type="button" aria-label="Attach code files" title="Attach code files">Attach file</button><input id="file-input" type="file" accept="text/*,.js,.jsx,.ts,.tsx,.py,.java,.go,.rs,.css,.html,.json,.md,.yaml,.yml,.sql,.sh" multiple hidden /></div>
+            </div>
+            <form class="type-row" id="type-row" hidden><label class="visually-hidden" for="type-input">Message CodeAssist</label><input id="type-input" type="text" placeholder="Ask CodeAssist about the code..." autocomplete="off" /><button class="app-button app-button-primary" type="submit">Send</button></form>
+          </section>
+
+          <section class="conversation-column" aria-label="Review conversation">
+            <div class="conversation-heading"><div><span class="surface-kicker">REVIEW THREAD</span><strong>CodeAssist <span class="mode-divider">/</span> <span id="live-mode">Bug hunt</span></strong></div><span class="conversation-state" id="speaking" data-state="quiet"><i></i><span id="speaking-text">Quiet</span></span></div>
+            <article class="pinned-card" id="pinned-card" hidden>
+              <div class="pinned-top"><span class="pin-label" id="pinned-label">Pinned by CodeAssist</span><span class="sev" id="pinned-sev" hidden></span></div>
+              <p class="pinned-location" id="pinned-loc"></p>
+              <p class="pinned-text" id="pinned-text"></p>
+              <div class="pinned-detail" id="pinned-detail" hidden><strong id="pinned-detail-label"></strong><code id="pinned-detail-body"></code></div>
+              <div class="diff" id="pinned-diff" hidden></div>
+              <div class="pin-actions" id="pin-actions" hidden><button class="app-button app-button-small" id="pinned-copy" type="button" hidden>Copy fix</button><button class="app-button app-button-text" id="pinned-cta" type="button" hidden></button></div>
+            </article>
+            <div class="transcript" id="transcript" aria-live="polite" aria-label="Live transcript"></div>
+            <div class="conversation-hint"><span class="hint-key">TIP</span> Paste 6+ lines or drop a code file to share it with CodeAssist.</div>
+          </section>
+        </div>
+      </section>
+
+      <section class="app-view summary-view" id="view-summary" hidden>
+        <div class="summary-header"><div><div class="app-eyebrow">Session complete</div><h1 id="report-title">Review summary</h1><p id="report-meta"></p></div><div class="summary-actions"><button class="app-button app-button-secondary" id="copy-report-btn" type="button">Copy report</button><button class="app-button app-button-primary" id="download-report-btn" type="button">Download .md</button></div></div>
+        <div class="report" id="report">
+          <p class="report-note" id="report-note" hidden>CodeAssist's structured summary could not be generated. Showing the findings and notes captured during your session.</p>
+          <section class="report-section"><div class="report-section-heading"><div><span class="surface-kicker">REVIEW FINDINGS</span><h2>What surfaced</h2></div><div class="report-stats" id="report-stats"></div></div><div class="report-findings" id="report-findings"></div></section>
+          <section class="report-section report-optional" id="report-patches-wrap" hidden><div class="report-section-heading"><div><span class="surface-kicker">SUGGESTED CHANGES</span><h2>Patch proposals</h2></div></div><div id="report-patches"></div></section>
+          <section class="report-section report-optional" id="report-unresolved-wrap" hidden><div class="report-section-heading"><div><span class="surface-kicker">OPEN QUESTIONS</span><h2>Still to verify</h2></div></div><ul class="report-list" id="report-unresolved"></ul></section>
+          <section class="report-section report-optional" id="report-next-wrap" hidden><div class="report-section-heading"><div><span class="surface-kicker">FOLLOW-UP</span><h2>Next steps</h2></div></div><ul class="report-list" id="report-next"></ul></section>
+          <section class="report-section"><div class="report-section-heading"><div><span class="surface-kicker">SESSION HISTORY</span><h2>Timeline</h2></div></div><ol class="report-timeline" id="report-timeline"></ol></section>
+        </div>
+        <button class="app-button app-button-quiet new-session-button" id="new-session-btn" type="button">Start another review <span aria-hidden="true">&#8594;</span></button>
+      </section>
+    </main>
+    <div class="error-note" id="error-note" role="alert" aria-live="assertive"></div>
+    <footer class="app-footer"><span>CODEASSIST / LIVE CODE REVIEW</span><span>Built for focused, non-destructive reviews.</span></footer>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

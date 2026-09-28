@@ -98,11 +98,11 @@ class ReviewSummary(BaseModel):
     next_steps: list[str]
 
 
-SUMMARY_INSTRUCTIONS = """You write the report at the end of a live, spoken code review between a developer ("You") and an AI reviewer ("Pair"). You get the speech transcript (auto-transcribed, so expect small errors), the notes Pair pinned, and the code changes Pair suggested.
+SUMMARY_INSTRUCTIONS = """You write the report at the end of a live, spoken code review between a developer ("You") and an AI reviewer ("CodeAssist"). You get the speech transcript (auto-transcribed, so expect small errors), the notes CodeAssist pinned, and the code changes CodeAssist suggested.
 
 The developer will paste your report into a pull request or ticket:
 - headline: one sentence on what the session found, naming the root cause if there was one.
-- findings: the distinct issues actually discussed, most severe first. Merge duplicates. Keep Pair's pinned severity when there is one. Severity: critical = security hole, data loss, or a crash on a common path; high = wrong behaviour users will hit; medium = an edge case or fragile code; suggestion = clarity, style, or a small improvement. location is file:line when known, otherwise "". fix is the concrete fix in one or two sentences, otherwise "".
+- findings: the distinct issues actually discussed, most severe first. Merge duplicates. Keep CodeAssist's pinned severity when there is one. Severity: critical = security hole, data loss, or a crash on a common path; high = wrong behaviour users will hit; medium = an edge case or fragile code; suggestion = clarity, style, or a small improvement. location is file:line when known, otherwise "". fix is the concrete fix in one or two sentences, otherwise "".
 - unresolved: questions or issues raised but not settled. Empty if none.
 - next_steps: up to four concrete actions, such as tests to add or things to verify.
 

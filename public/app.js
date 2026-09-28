@@ -3,10 +3,10 @@
  * Flow: pick a review focus → share screen + mic → mint an ephemeral token from
  * our Python backend → open a WebSocket to the Gemini Live API → stream mic
  * audio (16 kHz PCM) and screen frames (1 fps JPEG) in → play spoken replies
- * back gaplessly, with barge-in. Pair calls three tools mid-conversation:
+ * back gaplessly, with barge-in. CodeAssist calls three tools mid-conversation:
  * pin_note (the pinned card, with a severity), suggest_patch (a before/after
  * diff you can copy) and set_following (the "Following" chips). Files pasted
- * or dropped in go to Pair as numbered text. Ending the session writes a
+ * or dropped in go to CodeAssist as numbered text. Ending the session writes a
  * review report via /api/summary.
  */
 
@@ -66,7 +66,15 @@ the issue themselves or asked you to reveal it.`,
   },
 };
 
-const BASE_PROMPT = `You are Pair, a senior staff engineer doing a live code review beside the developer.
+const OPENING_PROMPTS = {
+  bug: `Start the review now. Inspect the latest shared-screen frame. Briefly say what file or UI you can see, then identify a likely bug only if the visible evidence supports it. If the code is unreadable or context is missing, ask one precise question or request the relevant file. Do not wait for the developer to speak.`,
+  security: `Start a focused security review of the shared screen now. Look for concrete authentication or authorization gaps, injection, XSS, exposed secrets, unsafe input handling, and data leaks. For a confirmed issue, explain the visible code evidence, how it could be triggered, its impact, and a practical fix. Do not invent a vulnerability from incomplete context. If the code is not readable, ask for the relevant file or a closer view. Begin speaking now.`,
+  performance: `Start a performance review of the shared screen now. Look for an evidenced bottleneck such as redundant requests, repeated work, blocking operations, leaks, or inefficient queries. Explain the cost and one practical improvement. If the code is not readable, ask for the relevant file or a closer view. Begin speaking now.`,
+  explain: `Start by explaining the code currently visible on the shared screen in plain language, then ask what part the developer wants to understand. Define jargon and do not assume experience. If no code is readable, ask them to open a file or share one. Begin speaking now.`,
+  interview: `Begin the code-review interview now. Ask one specific question grounded in the code visible on the shared screen, then wait for the developer's reasoning. Do not reveal the answer or suggest a fix. If the code is not readable, ask them to open a relevant file or share a snippet.`,
+};
+
+const BASE_PROMPT = `You are CodeAssist, a senior staff engineer doing a live code review beside the developer.
 You can SEE their shared screen and HEAR them talking through the problem. Use both together.
 
 Style:
@@ -234,8 +242,16 @@ const els = {
   copyReportBtn: $("copy-report-btn"),
   downloadReportBtn: $("download-report-btn"),
   newSessionBtn: $("new-session-btn"),
+  browserSupportNote: $("browser-support-note"),
   errorNote: $("error-note"),
 };
+
+if (/Electron/i.test(navigator.userAgent)) {
+  els.browserSupportNote.hidden = false;
+} else if (!window.isSecureContext || typeof navigator.mediaDevices?.getDisplayMedia !== "function") {
+  els.browserSupportNote.hidden = false;
+  els.browserSupportNote.textContent = "Screen sharing is unavailable here. Open this page in desktop Chrome or Edge over localhost or HTTPS.";
+}
 
 const START_LABEL = els.startBtn.textContent;
 const svgIcon = (paths) =>
@@ -369,7 +385,7 @@ function setLiveState(state) {
   els.liveLabel.textContent = state === "reconnecting" ? "Reconnecting" : "Live";
 }
 
-const SPEAKING_TEXT = { quiet: "Quiet", you: "You're talking", pair: "Pair is speaking", paused: "Paused" };
+const SPEAKING_TEXT = { quiet: "Quiet", you: "You're talking", pair: "CodeAssist is speaking", paused: "Paused" };
 function setSpeaking(state) {
   if (session.speaking === state) return;
   session.speaking = state;
@@ -431,7 +447,7 @@ function setFollowing(items) {
   session.following = clean;
   renderFollowing();
   if (changed && clean.length) {
-    addNote(`Pair is following ${joinWords(clean)}.`);
+    addNote(`CodeAssist is following ${joinWords(clean)}.`);
     logEvent(`Following ${joinWords(clean)}`);
   }
 }
@@ -525,7 +541,7 @@ function setCardHead(label, severity, location) {
   }
   els.pinnedLoc.textContent = location || "";
   els.screenBadge.hidden = !location;
-  els.screenBadge.textContent = location ? `Pair · ${location}` : "";
+  els.screenBadge.textContent = location ? `CodeAssist · ${location}` : "";
 }
 
 function syncPinActions() {
@@ -545,7 +561,7 @@ function renderPin(args) {
   session.pins.push(pin);
   logEvent(`Pinned (${SEVERITY[pin.severity]}): ${pin.note}`);
 
-  setCardHead("Pinned by Pair", pin.severity, pin.location);
+  setCardHead("Pinned by CodeAssist", pin.severity, pin.location);
   els.pinnedText.textContent = pin.note;
   els.pinnedDetail.hidden = !pin.detail;
   els.pinnedDetailLabel.textContent = pin.detail_label || "Detail";
@@ -585,7 +601,7 @@ function renderPatch(args) {
   syncPinActions();
   els.pinnedCard.hidden = false;
 
-  addNote(`Pair suggested a change${patch.location ? ` to ${patch.location}` : ""}. Copy it from the card above.`, PIN_ICON);
+  addNote(`CodeAssist suggested a change${patch.location ? ` to ${patch.location}` : ""}. Copy it from the card above.`, PIN_ICON);
   return true;
 }
 
@@ -751,7 +767,7 @@ function playChunk(pcmFloat) {
 }
 
 function stopPlayback() {
-  // Barge-in: the user spoke while Pair was talking — cut it instantly.
+  // Barge-in: the user spoke while CodeAssist was talking — cut it instantly.
   for (const s of session.playSources) {
     try { s.stop(); } catch { /* already stopped */ }
   }
@@ -838,7 +854,7 @@ function openSocket(token, model, resumeHandle) {
 async function reconnect() {
   if (session.reconnecting || !session.active) return;
   if (session.reconnects >= MAX_RECONNECTS) {
-    showError("Pair's connection kept dropping, so the session ended.");
+    showError("CodeAssist's connection kept dropping, so the session ended.");
     endSession();
     return;
   }
@@ -871,7 +887,7 @@ async function reconnect() {
         await new Promise((r) => setTimeout(r, attempt * 1000));
       }
     }
-    showError("Lost the connection to Pair and couldn't get it back.");
+    showError("Lost the connection to CodeAssist and couldn't get it back.");
     endSession();
   } finally {
     session.reconnecting = false;
@@ -919,7 +935,7 @@ function handleServerMessage(msg) {
     }
   }
   if (sc.inputTranscription?.text) appendToTurn("You", sc.inputTranscription.text);
-  if (sc.outputTranscription?.text) appendToTurn("Pair", sc.outputTranscription.text);
+  if (sc.outputTranscription?.text) appendToTurn("CodeAssist", sc.outputTranscription.text);
   if (sc.turnComplete) closeLastTurn();
 }
 
@@ -935,7 +951,7 @@ function sendTextTurn(text) {
 // ---------- sharing code as text ----------
 function shareCode(name, text) {
   if (session.ws?.readyState !== WebSocket.OPEN) {
-    showToast("Pair isn't connected right now. Try again in a moment.");
+    showToast("CodeAssist isn't connected right now. Try again in a moment.");
     return;
   }
   const lines = String(text).replace(/\r\n?/g, "\n").replace(/\n+$/, "").split("\n");
@@ -950,7 +966,7 @@ function shareCode(name, text) {
   });
   if (!session.files.includes(name)) session.files.push(name);
   logEvent(`Shared ${name} (${lines.length} lines)`);
-  addNote(`You shared ${name} · ${lines.length} lines. Pair reads it as text, so line numbers are exact.`, FILE_ICON);
+  addNote(`You shared ${name} · ${lines.length} lines. CodeAssist reads it as text, so line numbers are exact.`, FILE_ICON);
 }
 
 async function shareFile(file) {
@@ -1004,13 +1020,13 @@ function setMuted(muted) {
 }
 
 function setPaused(paused) {
-  if (session.paused !== paused && session.active) logEvent(paused ? "Paused Pair" : "Resumed Pair");
+  if (session.paused !== paused && session.active) logEvent(paused ? "Paused CodeAssist" : "Resumed CodeAssist");
   session.paused = paused;
   els.pauseBtn.classList.toggle("is-active", paused);
   els.pauseBtn.setAttribute("aria-pressed", String(paused));
-  els.pauseBtn.setAttribute("aria-label", paused ? "Resume Pair" : "Pause Pair");
+  els.pauseBtn.setAttribute("aria-label", paused ? "Resume CodeAssist" : "Pause CodeAssist");
   els.watching.classList.toggle("is-paused", paused);
-  els.watchingText.textContent = paused ? "Pair is paused" : "Pair is watching";
+  els.watchingText.textContent = paused ? "CodeAssist is paused" : "CodeAssist is watching";
   if (paused) stopPlayback();
 }
 
@@ -1105,7 +1121,7 @@ function renderReport(r) {
   els.report.classList.toggle("is-loading", loading);
   els.reportTitle.textContent = loading
     ? "Writing your review summary…"
-    : r.ai?.headline || (r.pins.length ? "Here's what Pair pinned." : "Review summary");
+    : r.ai?.headline || (r.pins.length ? "Here's what CodeAssist pinned." : "Review summary");
   const files = r.files.length ? `${r.files.length} file${r.files.length === 1 ? "" : "s"} shared` : "";
   els.reportMeta.textContent = [r.modeLabel, r.duration, files].filter(Boolean).join(" · ");
   els.reportNote.hidden = r.status !== "failed";
@@ -1172,7 +1188,7 @@ function renderReport(r) {
 
 function reportMarkdown(r) {
   const findings = reportFindings(r);
-  const out = ["# Code review summary", "", `**${r.modeLabel}** · ${r.duration} · ${r.endedAt.toLocaleString()}`];
+  const out = ["# CodeAssist review summary", "", `**${r.modeLabel}** · ${r.duration} · ${r.endedAt.toLocaleString()}`];
   if (r.ai?.headline) out.push("", r.ai.headline);
   if (r.files.length) out.push("", `Files shared: ${r.files.join(", ")}`);
 
@@ -1275,7 +1291,7 @@ async function startSession() {
       send({ realtimeInput: { audio: { mimeType: `audio/pcm;rate=${IN_SAMPLE_RATE}`, data: floatToPcm16Base64(chunk) } } });
     });
 
-    setStartBusy("Connecting to Pair…");
+    setStartBusy("Connecting to CodeAssist…");
     const { token, model } = await mintToken();
     session.ws = await openSocket(token, model, null);
     session.active = true;
@@ -1300,17 +1316,31 @@ async function startSession() {
     const watching = session.sourceLabel === "Entire screen" ? "your entire screen" : session.sourceLabel;
     els.liveMode.textContent = mode;
     logEvent(`Session started in ${mode} mode, watching ${watching}`);
-    addNote(`Pair is watching ${watching} in ${mode} mode. Start talking whenever you're ready. Paste or drop a file to share the exact code.`);
+    addNote(`CodeAssist is watching ${watching} in ${mode} mode. Start talking whenever you're ready. Paste or drop a file to share the exact code.`);
 
     els.timer.textContent = "00:00";
     session.clockTimer = setInterval(() => (els.timer.textContent = elapsed()), 1000);
     showView("live");
+
+    let firstFrame = grabFrame();
+    for (let attempt = 0; !firstFrame && attempt < 10; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      firstFrame = grabFrame();
+    }
+    if (firstFrame) {
+      send({ realtimeInput: { video: { mimeType: "image/jpeg", data: firstFrame } } });
+    }
+    addNote(`CodeAssist is starting the ${mode} review.`);
+    logEvent(`CodeAssist started the ${mode} review`);
+    send({ realtimeInput: { text: OPENING_PROMPTS[session.mode] } });
   } catch (err) {
     console.error(err);
     stopSession();
     showStartView();
     if (err.name === "NotAllowedError") {
-      showError("Pair needs your screen and microphone. Allow both to start a session.");
+      showError("CodeAssist needs your screen and microphone. Allow both to start a session.");
+    } else if (err.name === "NotSupportedError" || /not supported/i.test(err.message || "")) {
+      showError("This browser cannot share your screen. Open http://localhost:8000 in desktop Chrome or Edge to start a review.");
     } else if (err.name !== "AbortError") {
       showError(err.message);
     }

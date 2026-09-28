@@ -2,218 +2,341 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0; url=review.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Code Review Companion · NSOffice</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231b4dff'/%3E%3Cpath d='M9 16s2.6-5 7-5 7 5 7 5-2.6 5-7 5-7-5-7-5z' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23fff'/%3E%3C/svg%3E" />
+  <title>CodeAssist | Live Code Review</title>
+  <meta name="description" content="Start a live, screen-aware code review with CodeAssist." />
+  <link rel="icon" type="image/svg+xml" href="codeassist-logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="tokens.css" />
   <link rel="stylesheet" href="app.css" />
 </head>
 <body>
-  <div class="bg" aria-hidden="true"><span class="bg-accent"></span><span class="bg-white"></span></div>
-
-  <div id="app">
-    <header class="glass bar">
-      <div class="brand">
-        <span class="brand-name">NSOffice</span>
-        <span class="brand-sub">Code Review Companion</span>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <div class="brand" aria-label="NSOffice.AI home">
+          <span class="brand-mark">N</span>
+          <span class="brand-text">NSOffice.AI</span>
+        </div>
+        <nav class="main-nav" aria-label="Main navigation">
+          <a href="#platform">Platform</a>
+          <a href="#solutions">Solutions</a>
+          <a href="#security">Security</a>
+          <a href="#value">Value</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="nav-link" href="#demo">Book a Demo</a>
+          <a class="button button-primary" href="#demo">Get a Demo</a>
+        </div>
       </div>
-      <div class="live-pill" id="live-badge" hidden>
-        <span class="live-dot"></span><span id="live-label">Live</span><span class="live-mode" id="live-mode"></span><span class="timer" id="timer">00:00</span>
-      </div>
-      <button type="button" class="btn-quiet" id="end-btn" hidden>End session</button>
     </header>
 
-    <!-- 0 · Start -->
-    <main class="view-start" id="view-start">
-      <section class="glass hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <div class="eyebrow">Live code review</div>
-          <h1 id="hero-title">Talk through the bug. Pair watches the code with you.</h1>
-          <p class="lede">
-            Share your screen and think out loud. Pair follows what you're looking at and what
-            you're saying, and speaks up when it spots something, like a senior engineer looking
-            over your shoulder.
-          </p>
-        </div>
-
-        <div class="steps">
-          <div class="step">
-            <div class="step-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
+    <main>
+      <section class="hero-section">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">Live code review intelligence</div>
+            <h1>Talk through the bug. Pair watches the code with you.</h1>
+            <p>
+              Share your screen, explain the issue out loud, and let your AI review companion follow
+              both the code and the conversation in real time.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#demo">Start a live review</a>
+              <a class="button button-secondary" href="#platform">See the workflow</a>
             </div>
-            <div class="step-copy">
-              <div class="step-title">Share the screen with your code</div>
-              <div class="step-sub">Keep DevTools in view too if the bug shows up there.</div>
+            <div class="hero-metrics">
+              <div><strong>5x</strong><span>faster reviews</span></div>
+              <div><strong>1,000+</strong><span>review context points</span></div>
+              <div><strong>100%</strong><span>screen-aware</span></div>
             </div>
           </div>
-          <div class="step">
-            <div class="step-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
-            </div>
-            <div class="step-copy">
-              <div class="step-title">Allow the microphone</div>
-              <div class="step-sub">Talk normally. Cut in whenever you like and Pair stops to listen.</div>
+
+          <div class="hero-visual" aria-label="Code review dashboard preview">
+            <div class="dashboard-panel">
+              <div class="panel-header">
+                <span class="dot blue"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+              <div class="dashboard-cards">
+                <div class="stat-card highlight">
+                  <label>Issue confidence</label>
+                  <strong>94.8%</strong>
+                  <span>Root cause detected</span>
+                </div>
+                <div class="stat-card">
+                  <label>Files tracked</label>
+                  <strong>12</strong>
+                  <span>Live code + context</span>
+                </div>
+                <div class="stat-card wide">
+                  <label>Review focus</label>
+                  <div class="bars">
+                    <span style="height: 38%"></span>
+                    <span style="height: 58%"></span>
+                    <span style="height: 77%"></span>
+                    <span style="height: 94%"></span>
+                    <span style="height: 86%"></span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <div class="modes">
-          <div class="modes-label" id="modes-label">Review focus</div>
-          <div class="mode-options" id="mode-options" role="radiogroup" aria-labelledby="modes-label"></div>
-          <div class="mode-desc" id="mode-desc"></div>
+      <section class="logo-strip">
+        <div class="container logo-row" aria-label="Trusted by engineering teams">
+          <span>GitHub</span>
+          <span>Stripe</span>
+          <span>Notion</span>
+          <span>Figma</span>
+          <span>Linear</span>
+          <span>Slack</span>
+          <span>Vercel</span>
+          <span>Supabase</span>
+        </div>
+      </section>
+
+      <section class="section metrics-section" id="value">
+        <div class="container section-head">
+          <div class="eyebrow">Built for product teams</div>
+          <h2>The metrics your engineering team runs on — moved upstream.</h2>
         </div>
 
-        <div class="hero-actions">
-          <button type="button" class="btn-primary" id="start-btn">Share screen and start</button>
-          <div class="hint" id="start-hint">Voice and screen run live on gemini-3.1-flash-live-preview</div>
+        <div class="container metric-grid">
+          <article class="metric-card blue-card">
+            <div class="metric-tag">Code quality</div>
+            <h3>Find the root cause before the fix.</h3>
+            <p>30–50% faster review cycles</p>
+            <strong>Fewer rework loops</strong>
+          </article>
+          <article class="metric-card">
+            <div class="metric-tag">Security</div>
+            <h3>Flag risky inputs and edge cases early.</h3>
+            <p>2x better issue triage</p>
+            <strong>Fewer hidden regressions</strong>
+          </article>
+          <article class="metric-card">
+            <div class="metric-tag">Debugging</div>
+            <h3>Turn live screen context into decisions.</h3>
+            <p>3–5 days saved per review cycle</p>
+            <strong>Clearer investigation paths</strong>
+          </article>
+          <article class="metric-card">
+            <div class="metric-tag">Onboarding</div>
+            <h3>Explain the code like a senior engineer.</h3>
+            <p>2.5x faster ramp-up</p>
+            <strong>More confident teams</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="section context-section" id="platform">
+        <div class="container section-head narrow">
+          <div class="eyebrow">Your shared review context</div>
+          <h2>Every bug you see is a product of context, code, and conversation.</h2>
+        </div>
+
+        <div class="container context-grid">
+          <div class="context-feature">
+            <div class="feature-icon">01</div>
+            <div>
+              <h3>Think</h3>
+              <p>Review the live code, the active panel, and the current behavioral symptoms together.</p>
+            </div>
+          </div>
+          <div class="context-feature">
+            <div class="feature-icon">02</div>
+            <div>
+              <h3>Know</h3>
+              <p>Follow the exact file, bug state, and team discussion in one shared review thread.</p>
+            </div>
+          </div>
+          <div class="context-feature">
+            <div class="feature-icon">03</div>
+            <div>
+              <h3>Do</h3>
+              <p>Move from diagnosis to suggested fix with a clean, copyable patch and pinned insight.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section architecture-section">
+        <div class="container section-head center">
+          <div class="eyebrow">How it works</div>
+          <h2>How the live review companion works</h2>
+        </div>
+
+        <div class="container architecture-block">
+          <div class="arch-grid">
+            <div class="arch-column">
+              <div class="arch-card">
+                <span class="tag">Screen context</span>
+                <h3>Shared view</h3>
+                <p>See the live screen, IDE state, and bug flow as the teammate explains the issue.</p>
+              </div>
+              <div class="arch-card">
+                <span class="tag">Conversation</span>
+                <h3>Live reasoning</h3>
+                <p>Speak naturally, interrupt when needed, and keep the review grounded in what matters.</p>
+              </div>
+            </div>
+            <div class="arch-center panel-glow">
+              <div class="mini-stack">
+                <span>Screen capture</span>
+                <span>Mic + transcript</span>
+                <span>Focused review</span>
+                <span>Suggested fix</span>
+              </div>
+            </div>
+            <div class="arch-column">
+              <div class="arch-card">
+                <span class="tag">Insights</span>
+                <h3>Pinned notes</h3>
+                <p>Track the root cause, risky line, and next action as the review evolves.</p>
+              </div>
+              <div class="arch-card">
+                <span class="tag">Patch flow</span>
+                <h3>Ready-to-copy output</h3>
+                <p>Turn the conversation into a diff the team can review without overwriting code.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section security-section" id="security">
+        <div class="container security-layout">
+          <div class="security-copy">
+            <div class="eyebrow">Security and trust</div>
+            <h2>Review the code, not the risk.</h2>
+            <p>
+              Your review companion keeps the context in your environment, respects the code flow, and
+              focuses on real engineering signals rather than noisy guesses.
+            </p>
+            <ul class="security-points">
+              <li><strong>Private by design</strong><span>Screen sharing and review data stay under your control and policy boundaries.</span></li>
+              <li><strong>Zero random noise</strong><span>Only the relevant code path, panel state, and transcript context are surfaced.</span></li>
+              <li><strong>Guardrails in review</strong><span>Helpful suggestions are grounded in the exact code and current conversation state.</span></li>
+              <li><strong>Safe by default</strong><span>The workflow stays conversational, collaborative, and non-destructive.</span></li>
+            </ul>
+          </div>
+          <div class="security-panel">
+            <div class="security-badge">Secure • live • review-ready</div>
+            <div class="security-list">
+              <span>Screen-aware review</span>
+              <span>Transcript + code context</span>
+              <span>Patch suggestions</span>
+              <span>Real-time follow-up</span>
+              <span>No file overwrite</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section comparison-section" id="solutions">
+        <div class="container section-head center">
+          <div class="eyebrow">Why teams use it</div>
+          <h2>More context. Less guesswork. Better review quality.</h2>
+        </div>
+        <div class="container table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Capability</th>
+                <th>Companion</th>
+                <th>Static review tools</th>
+                <th>Chat-only AI</th>
+                <th>Manual debug</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Live screen awareness</td>
+                <td>Yes</td>
+                <td>Partial</td>
+                <td>No</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td>Code + conversation context</td>
+                <td>Yes</td>
+                <td>Limited</td>
+                <td>Limited</td>
+                <td>Limited</td>
+              </tr>
+              <tr>
+                <td>Suggested patch flow</td>
+                <td>Yes</td>
+                <td>Basic</td>
+                <td>Basic</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td>AI review pacing</td>
+                <td>Real-time</td>
+                <td>Delayed</td>
+                <td>Turn-based</td>
+                <td>Manual</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="cta-block" id="demo">
+        <div class="container cta-inner">
+          <div>
+            <div class="eyebrow">Start a live session</div>
+            <h2>Turn code review into a shared engineering conversation.</h2>
+          </div>
+          <a class="button button-primary" href="mailto:hello@codecompanion.ai">Launch review</a>
         </div>
       </section>
     </main>
 
-    <!-- 1–3 · Live session -->
-    <main class="live" id="view-live" hidden>
-      <div class="live-left">
-        <section class="glass screen" aria-label="Your shared screen">
-          <div class="screen-head">
-            <div class="screen-title">
-              <span class="title">Your screen</span>
-              <span class="sub" id="screen-sub">Shared live</span>
-            </div>
-            <div class="watching" id="watching">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              <span id="watching-text">Pair is watching</span>
-            </div>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <div class="brand brand-footer">
+            <span class="brand-mark">N</span>
+            <span class="brand-text">NSOffice.AI</span>
           </div>
-
-          <div class="screen-frame">
-            <video id="screen-video" autoplay muted playsinline></video>
-            <div class="screen-badge" id="screen-badge" hidden></div>
-          </div>
-
-          <div class="following" id="following" aria-label="What Pair is following">
-            <span class="following-label">Following</span>
-          </div>
-        </section>
-
-        <div class="dock">
-          <form class="glass type-bar" id="type-row" hidden>
-            <input id="type-input" type="text" aria-label="Message to Pair" placeholder="Type to Pair, or paste code to share it…" autocomplete="off" />
-            <button type="submit" class="icon-btn" aria-label="Send message">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
-            </button>
-          </form>
-
-          <div class="glass pill">
-            <button type="button" class="icon-btn" id="stopshare-btn" aria-label="Stop sharing screen and end session">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
-            </button>
-            <button type="button" class="mic-btn" id="mic-btn" aria-label="Mute microphone">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
-              <span class="waveform" id="mic-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
-              <span id="mic-label">Mic live</span>
-            </button>
-            <button type="button" class="icon-btn" id="type-toggle-btn" aria-label="Type instead of talking" aria-pressed="false">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"></path></svg>
-            </button>
-            <button type="button" class="icon-btn" id="attach-btn" aria-label="Share a file with Pair">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5.3 5.3 0 0 1-7.5-7.5l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.6 8.6a1.8 1.8 0 0 1-2.5-2.5l7.9-7.9"></path></svg>
-            </button>
-            <input type="file" id="file-input" multiple hidden />
-            <button type="button" class="icon-btn" id="pause-btn" aria-label="Pause Pair" aria-pressed="false">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"></path></svg>
-            </button>
-          </div>
+          <p>One decision bar. One secured interface. Infinite contextual intelligence.</p>
+        </div>
+        <div>
+          <h3>Platform</h3>
+          <ul>
+            <li><a href="#platform">Live Review</a></li>
+            <li><a href="#platform">Code Context</a></li>
+            <li><a href="#security">Secure Workflow</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Solutions</h3>
+          <ul>
+            <li><a href="#solutions">Bug review</a></li>
+            <li><a href="#solutions">Security review</a></li>
+            <li><a href="#solutions">Onboarding</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Contact</h3>
+          <ul>
+            <li><a href="mailto:hello@codecompanion.ai">hello@codecompanion.ai</a></li>
+            <li><a href="#demo">Book a demo</a></li>
+            <li><a href="#demo">Request access</a></li>
+          </ul>
         </div>
       </div>
-
-      <div class="live-right">
-        <section class="glass pin" id="pinned-card" hidden aria-label="Pinned by Pair">
-          <div class="pin-head">
-            <span class="pin-title">
-              <span class="pin-label" id="pinned-label">Pinned by Pair</span>
-              <span class="sev" id="pinned-sev" hidden></span>
-            </span>
-            <span class="pin-loc" id="pinned-loc"></span>
-          </div>
-          <p class="pin-text" id="pinned-text"></p>
-          <div class="pin-detail" id="pinned-detail" hidden>
-            <div class="pin-detail-label" id="pinned-detail-label"></div>
-            <div class="pin-detail-body" id="pinned-detail-body"></div>
-          </div>
-          <div class="diff" id="pinned-diff" hidden></div>
-          <div class="pin-actions" id="pin-actions" hidden>
-            <button type="button" class="btn-follow" id="pinned-copy" hidden>Copy fix</button>
-            <button type="button" class="btn-follow" id="pinned-cta" hidden></button>
-          </div>
-        </section>
-
-        <aside class="glass convo" aria-label="Conversation">
-          <div class="convo-head">
-            <span class="convo-title">Conversation</span>
-            <span class="speaking" id="speaking" data-state="quiet" aria-live="polite">
-              <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-              <span id="speaking-text">Quiet</span>
-            </span>
-          </div>
-          <div class="transcript" id="transcript" aria-live="polite"></div>
-        </aside>
-      </div>
-    </main>
-
-    <!-- 4 · Review report -->
-    <main class="view-summary" id="view-summary" hidden>
-      <section class="glass report" id="report" aria-labelledby="report-title">
-        <div class="report-head">
-          <div class="eyebrow">Review summary</div>
-          <h1 class="report-title" id="report-title" aria-live="polite">Writing your review summary…</h1>
-          <div class="report-meta" id="report-meta"></div>
-          <p class="report-note" id="report-note" hidden>Couldn't write the full summary right now, so these are the notes Pair pinned during the session.</p>
-        </div>
-
-        <div class="report-stats" id="report-stats"></div>
-
-        <section class="report-section" aria-labelledby="findings-title">
-          <h2 id="findings-title">Findings</h2>
-          <div class="findings" id="report-findings"></div>
-        </section>
-
-        <section class="report-section" id="report-patches-wrap" hidden aria-labelledby="patches-title">
-          <h2 id="patches-title">Suggested changes</h2>
-          <div class="findings" id="report-patches"></div>
-        </section>
-
-        <section class="report-section" id="report-unresolved-wrap" hidden aria-labelledby="unresolved-title">
-          <h2 id="unresolved-title">Still open</h2>
-          <ul class="report-list" id="report-unresolved"></ul>
-        </section>
-
-        <section class="report-section" id="report-next-wrap" hidden aria-labelledby="next-title">
-          <h2 id="next-title">Next steps</h2>
-          <ul class="report-list" id="report-next"></ul>
-        </section>
-
-        <section class="report-section" aria-labelledby="timeline-title">
-          <h2 id="timeline-title">Timeline</h2>
-          <ol class="timeline" id="report-timeline"></ol>
-        </section>
-
-        <div class="report-actions">
-          <button type="button" class="btn-primary" id="copy-report-btn">Copy report</button>
-          <button type="button" class="btn-quiet" id="download-report-btn">Download .md</button>
-          <button type="button" class="btn-quiet" id="new-session-btn">New session</button>
-        </div>
-      </section>
-    </main>
+    </footer>
   </div>
-
-  <div class="toast" id="error-note" role="alert"></div>
-
-  <script type="module" src="app.js"></script>
 </body>
 </html>
