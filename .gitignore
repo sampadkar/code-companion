@@ -4,6 +4,7 @@
 __pycache__/
 *.pyc
 .venv/
+site-packages/
 .vercel
 node_modules/
 .DS_Store

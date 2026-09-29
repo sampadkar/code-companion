@@ -40,7 +40,9 @@ unhandled edge cases and async ordering problems. Get to a root cause, then a fi
     desc: "Looks for injection, auth gaps, secrets and unsafe input.",
     prompt: `Focus: security. Look for injection, missing authentication or authorization checks,
 secrets in code, unsafe input handling, XSS, insecure defaults and data exposure. Judge each
-issue by its real-world impact, not by how it looks.`,
+issue by its real-world impact, not by how it looks. If the issue is concrete and the risky code
+is visible or shared, give both the warning and a minimal fix patch; do not stop at a verbal
+warning when a specific fix is obvious.`,
   },
   performance: {
     label: "Performance",
@@ -56,22 +58,13 @@ it costs, not just that it's slow.`,
 plain words before judging it, define any jargon you use, and use small concrete examples.
 Still point out bugs, gently.`,
   },
-  interview: {
-    label: "Interviewer",
-    desc: "Asks questions and gives hints instead of answers.",
-    prompt: `Focus: you are running a code-review interview. Don't give answers away. Ask what they
-think is wrong, give a hint only when they're stuck, ask them to propose the fix, then judge their
-reasoning honestly in a sentence or two. Only pin a note or suggest a patch after they've found
-the issue themselves or asked you to reveal it.`,
-  },
 };
 
 const OPENING_PROMPTS = {
   bug: `Start the review now. Inspect the latest shared-screen frame. Briefly say what file or UI you can see, then identify a likely bug only if the visible evidence supports it. If the code is unreadable or context is missing, ask one precise question or request the relevant file. Do not wait for the developer to speak.`,
-  security: `Start a focused security review of the shared screen now. Look for concrete authentication or authorization gaps, injection, XSS, exposed secrets, unsafe input handling, and data leaks. For a confirmed issue, explain the visible code evidence, how it could be triggered, its impact, and a practical fix. Do not invent a vulnerability from incomplete context. If the code is not readable, ask for the relevant file or a closer view. Begin speaking now.`,
+  security: `Start a focused security review of the shared screen now. Look for concrete authentication or authorization gaps, injection, XSS, exposed secrets, unsafe input handling, and data leaks. For a confirmed issue, explain the visible code evidence, how it could be triggered, its impact, and a practical fix. If the fix is clear and grounded in visible code, use a suggest_patch tool call with exact before/after lines; do not stop at a verbal warning. Do not invent a vulnerability from incomplete context. If the code is not readable, ask for the relevant file or a closer view. Begin speaking now.`,
   performance: `Start a performance review of the shared screen now. Look for an evidenced bottleneck such as redundant requests, repeated work, blocking operations, leaks, or inefficient queries. Explain the cost and one practical improvement. If the code is not readable, ask for the relevant file or a closer view. Begin speaking now.`,
   explain: `Start by explaining the code currently visible on the shared screen in plain language, then ask what part the developer wants to understand. Define jargon and do not assume experience. If no code is readable, ask them to open a file or share one. Begin speaking now.`,
-  interview: `Begin the code-review interview now. Ask one specific question grounded in the code visible on the shared screen, then wait for the developer's reasoning. Do not reveal the answer or suggest a fix. If the code is not readable, ask them to open a relevant file or share a snippet.`,
 };
 
 const BASE_PROMPT = `You are CodeAssist, a senior staff engineer doing a live code review beside the developer.
@@ -98,12 +91,15 @@ Tools:
 - suggest_patch: when you have a concrete code fix, show it. Put the exact current lines in
   before and your replacement in after, copied character for character with indentation,
   from a shared file if there is one, otherwise from the screen. Keep it under 15 lines.
-  Don't read code aloud; say in one sentence what the change does.
+  Don't read code aloud; say in one sentence what the change does. In security reviews,
+  prefer a concrete patch when the risk and fix are both clear.
 
 Shared files:
 - The developer may paste or drop a file. It arrives as text with line numbers. Treat it as
   the source of truth over the screenshot, use its line numbers in locations, and
-  acknowledge it in one short sentence.`;
+  acknowledge it in one short sentence.
+- Only reference file names that are actually on screen, in a shared file snippet, or
+  explicitly pasted by the developer. Never guess or invent a file that isn't visible.`;
 
 function systemPrompt(mode) {
   return `${BASE_PROMPT}\n\n${MODES[mode].prompt}`;
@@ -201,6 +197,7 @@ const els = {
   watching: $("watching"),
   watchingText: $("watching-text"),
   following: $("following"),
+  switchShareBtn: $("switchshare-btn"),
   stopShareBtn: $("stopshare-btn"),
   micBtn: $("mic-btn"),
   micLabel: $("mic-label"),
@@ -440,20 +437,36 @@ function renderFollowing() {
 
 function setFollowing(items) {
   const clean = (Array.isArray(items) ? items : [])
-    .map((s) => String(s).trim())
+    .map((s) => normalizeKnownFileRef(String(s).trim()))
     .filter(Boolean)
     .slice(0, 3);
+
+  const fallback = session.following.length ? session.following : [session.sourceLabel];
   const changed = clean.join("|") !== session.following.join("|");
-  session.following = clean;
+  session.following = clean.length ? clean : fallback;
   renderFollowing();
-  if (changed && clean.length) {
-    addNote(`CodeAssist is following ${joinWords(clean)}.`);
-    logEvent(`Following ${joinWords(clean)}`);
+  if (changed && session.following.length) {
+    addNote(`CodeAssist is following ${joinWords(session.following)}.`);
+    logEvent(`Following ${joinWords(session.following)}`);
   }
 }
 
 function joinWords(list) {
   return list.length < 2 ? list.join("") : `${list.slice(0, -1).join(", ")} and ${list.at(-1)}`;
+}
+
+function normalizeKnownFileRef(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const match = raw.match(/([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)(?::\d+(?:-\d+)?)?/);
+  if (!match) return raw;
+
+  const file = match[1];
+  const known = session.files.some((name) => name.toLowerCase() === file.toLowerCase());
+  if (!known) return "";
+
+  return raw;
 }
 
 // ---------- transcript ----------
@@ -531,6 +544,14 @@ function renderDiff(container, before, after) {
   container.replaceChildren(body);
 }
 
+function patchCopyText(before, after) {
+  const parts = [];
+  for (const [op, text] of diffLines(splitLines(before), splitLines(after))) {
+    if (op === "+") parts.push(text);
+  }
+  return parts.join("\n").trim();
+}
+
 // ---------- pinned card: a pin or a suggested change ----------
 function setCardHead(label, severity, location) {
   els.pinnedLabel.textContent = label;
@@ -552,7 +573,7 @@ function renderPin(args) {
   const pin = {
     note: String(args.note || "").trim(),
     severity: normSeverity(args.severity),
-    location: String(args.location || "").trim(),
+    location: normalizeKnownFileRef(String(args.location || "").trim()),
     detail: String(args.detail || ""),
     detail_label: String(args.detail_label || ""),
     time: elapsed(),
@@ -580,7 +601,7 @@ function renderPin(args) {
 function renderPatch(args) {
   const patch = {
     summary: String(args.summary || "").trim(),
-    location: String(args.location || "").trim(),
+    location: normalizeKnownFileRef(String(args.location || "").trim()),
     before: String(args.before || ""),
     after: String(args.after || ""),
     severity: args.severity ? normSeverity(args.severity) : "",
@@ -595,8 +616,8 @@ function renderPatch(args) {
   els.pinnedDetail.hidden = true;
   renderDiff(els.pinnedDiff, patch.before, patch.after);
   els.pinnedDiff.hidden = false;
-  session.copyText = patch.after;
-  els.pinnedCopy.hidden = !patch.after.trim();
+  session.copyText = patchCopyText(patch.before, patch.after) || patch.after;
+  els.pinnedCopy.hidden = !session.copyText.trim();
   els.pinnedCta.hidden = true;
   syncPinActions();
   els.pinnedCard.hidden = false;
@@ -649,18 +670,23 @@ function describeSurface(track) {
   return { kind, label: label || kind };
 }
 
-async function startScreenShare() {
-  session.screenStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 } });
-  const track = session.screenStream.getVideoTracks()[0];
-  // Fires when the user clicks the browser's own "Stop sharing" bar.
-  track.addEventListener("ended", () => endSession());
-
+async function attachScreenStream(stream) {
+  session.screenStream = stream;
+  const track = stream.getVideoTracks()[0];
+  track.addEventListener("ended", () => {
+    if (session.screenStream === stream) endSession();
+  });
   const { kind, label } = describeSurface(track);
   els.screenSub.textContent = kind;
   session.sourceLabel = label;
-
-  els.screenVideo.srcObject = session.screenStream;
+  els.screenVideo.srcObject = stream;
   await els.screenVideo.play().catch(() => {});
+  return { kind, label };
+}
+
+async function startScreenShare() {
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 } });
+  await attachScreenStream(stream);
 
   // Offscreen canvas only for the JPEG frames sent to the model; the visible
   // <video> shows the live feed directly.
@@ -674,6 +700,39 @@ async function startScreenShare() {
     canvas.getContext("2d").drawImage(els.screenVideo, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL("image/jpeg", JPEG_QUALITY).split(",")[1];
   };
+}
+
+async function switchScreenShare() {
+  if (!session.active || session.switchingScreen) return;
+  session.switchingScreen = true;
+  els.switchShareBtn.disabled = true;
+  els.switchShareBtn.textContent = "Choose screen...";
+
+  try {
+    const nextStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 } });
+    if (!session.active) {
+      nextStream.getTracks().forEach((track) => track.stop());
+      return;
+    }
+
+    const previousStream = session.screenStream;
+    const { kind, label } = await attachScreenStream(nextStream);
+    previousStream?.getTracks().forEach((track) => track.stop());
+    session.following = [];
+    renderFollowing();
+    const message = `The shared screen changed to ${label} (${kind}). Review the current screen and do not rely on the previous screen.`;
+    send({ realtimeInput: { text: message } });
+    addNote(`Screen switched to ${label}. CodeAssist is continuing the review.`);
+    logEvent(`Screen switched to ${label}`);
+  } catch (err) {
+    if (err.name !== "NotAllowedError" && err.name !== "AbortError") {
+      showError(`Couldn't switch the shared screen: ${err.message}`);
+    }
+  } finally {
+    session.switchingScreen = false;
+    els.switchShareBtn.disabled = false;
+    els.switchShareBtn.textContent = "Switch screen";
+  }
 }
 
 // Mic capture with an inline AudioWorklet (no extra file needed).
@@ -1057,6 +1116,7 @@ els.typeInput.addEventListener("keydown", (e) => {
 });
 els.pinnedCta.addEventListener("click", () => sendTextTurn(els.pinnedCta.textContent));
 els.pinnedCopy.addEventListener("click", () => copyText(session.copyText, els.pinnedCopy));
+els.switchShareBtn.addEventListener("click", switchScreenShare);
 // track.stop() doesn't fire "ended", so end the session directly.
 els.stopShareBtn.addEventListener("click", () => endSession());
 
@@ -1239,6 +1299,20 @@ function showReport(r) {
   currentReport = { ...r, status: "loading", ai: null };
   showView("summary");
   els.viewSummary.scrollTop = 0;
+
+  const grounded = r.files.length || r.pins.some((p) => String(p.location || "").trim()) || r.patches.some((p) => String(p.location || "").trim());
+  if (!grounded) {
+    currentReport.ai = {
+      headline: "No source files were shared for this review.",
+      findings: [],
+      unresolved: [],
+      next_steps: ["Upload the relevant source file or paste the code snippet to get a grounded review."],
+    };
+    currentReport.status = "ready";
+    renderReport(currentReport);
+    return;
+  }
+
   renderReport(currentReport);
   fetchSummary(r)
     .then((ai) => {

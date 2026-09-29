@@ -116,6 +116,16 @@ def _api_key() -> str:
     return api_key
 
 
+def _has_grounded_code(req: SummaryRequest) -> bool:
+    if req.files:
+        return True
+    if any((p.location or "").strip() for p in req.pins):
+        return True
+    if any((p.location or "").strip() for p in req.patches):
+        return True
+    return False
+
+
 def _create_ephemeral_token() -> TokenResponse:
     """Create a single-use ephemeral token for a Live API session.
 
@@ -215,6 +225,13 @@ def _write_summary(req: SummaryRequest) -> ReviewSummary:
 def summarize(req: SummaryRequest):
     if not (req.transcript or req.pins or req.patches):
         return JSONResponse(status_code=400, content={"error": "Nothing to summarize yet."})
+    if not _has_grounded_code(req):
+        return ReviewSummary(
+            headline="No source files were shared for this review.",
+            findings=[],
+            unresolved=[],
+            next_steps=["Upload the relevant source file or paste the code snippet to get a grounded review."],
+        )
     try:
         return _write_summary(req)
     except RuntimeError as exc:

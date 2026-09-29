@@ -60,13 +60,13 @@
 
         <aside class="start-visual" aria-label="Review workflow preview">
           <div class="visual-topline"><span>CODEASSIST / REVIEW WORKSPACE</span><span class="visual-live"><i></i> READY</span></div>
-          <div class="visual-code"><div class="code-file"><span class="file-glyph">JS</span><span>useSearch.js</span><span class="code-line-label">14:12</span></div>
-            <div class="code-row"><b>10</b><code><span class="code-purple">async function</span> <span class="code-blue">loadResults</span>(query) {</code></div>
-            <div class="code-row"><b>11</b><code>  <span class="code-purple">const</span> response = <span class="code-purple">await</span> fetch(url);</code></div>
-            <div class="code-row code-highlight"><b>12</b><code>  <span class="code-purple">return</span> response.json();</code></div>
-            <div class="code-row"><b>13</b><code>}</code></div>
+          <div class="visual-code"><div class="code-file"><span class="file-glyph">SC</span><span>Shared code</span><span class="code-line-label">waiting</span></div>
+            <div class="code-row"><b>01</b><code><span class="code-purple">//</span> Share your screen or drop a file to start the review.</code></div>
+            <div class="code-row"><b>02</b><code><span class="code-purple">const</span> review = <span class="code-blue">CodeAssist</span>;</code></div>
+            <div class="code-row code-highlight"><b>03</b><code><span class="code-purple">await</span> inspectCurrentState();</code></div>
+            <div class="code-row"><b>04</b><code><span class="code-purple">return</span> review;</code></div>
           </div>
-          <div class="visual-insight"><img class="insight-mark" src="codeassist-logo.svg" alt="" /><div><small>CODEASSIST IS READY</small><p>Show me the failing state and we can trace it together.</p></div><span class="insight-pulse"></span></div>
+          <div class="visual-insight"><img class="insight-mark" src="codeassist-logo.svg" alt="" /><div><small>CODEASSIST IS READY</small><p>Share the screen or a code file and we’ll review the exact context.</p></div><span class="insight-pulse"></span></div>
           <div class="visual-footer"><span><i class="mini-green"></i> SCREEN CONTEXT</span><span>VOICE TRANSCRIPT</span><span>PATCH PREVIEW</span></div>
         </aside>
       </section>
@@ -85,7 +85,7 @@
               <span class="screen-badge" id="screen-badge" hidden></span>
               <div class="watching-state" id="watching"><span class="watching-indicator"></span><span id="watching-text">CodeAssist is watching</span></div>
             </div>
-            <div class="following-row"><span class="following-label">FOLLOWING</span><div id="following"><span class="chip is-focus">Your screen</span></div><button class="app-icon-button" id="stopshare-btn" type="button" aria-label="Stop screen sharing" title="Stop screen sharing">Stop share</button></div>
+            <div class="following-row"><span class="following-label">FOLLOWING</span><div id="following"><span class="chip is-focus">Your screen</span></div><button class="app-icon-button" id="switchshare-btn" type="button" aria-label="Switch shared screen" title="Choose a different tab, window, or screen">Switch screen</button><button class="app-icon-button" id="stopshare-btn" type="button" aria-label="Stop screen sharing" title="Stop screen sharing">Stop share</button></div>
             <div class="review-controls">
               <div class="mic-status"><span class="mic-indicator"></span><span id="mic-label">Mic live</span><div class="mic-waveform" id="mic-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
               <div class="control-actions"><button class="app-icon-button" id="mic-btn" type="button" aria-label="Mute microphone" title="Mute microphone">Mute</button><button class="app-icon-button" id="pause-btn" type="button" aria-label="Pause CodeAssist" aria-pressed="false" title="Pause CodeAssist">Pause CodeAssist</button><button class="app-icon-button" id="type-toggle-btn" type="button" aria-label="Type a message" aria-pressed="false" title="Type a message">Type</button><button class="app-icon-button" id="attach-btn" type="button" aria-label="Attach code files" title="Attach code files">Attach file</button><input id="file-input" type="file" accept="text/*,.js,.jsx,.ts,.tsx,.py,.java,.go,.rs,.css,.html,.json,.md,.yaml,.yml,.sql,.sh" multiple hidden /></div>
